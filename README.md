@@ -109,7 +109,7 @@ The tool accepts the following parameters:
 - **query** (string, required): The search terms (e.g., "sunset ocean", "eiffel tower").
 - **limit** (number, optional): Maximum number of results to return (default: 9, max: 50).
 - **offset** (number, optional): Number of results to skip for pagination.
-- **license** (string, optional): Filter by license. Options: `"all"` (default) or `"no_restrictions"` (CC0/Public Domain).
+- **license** (string, optional): Filter by license. Options: `"all"` (default) or `"cc0"` (CC0 only). Always check the file page for the exact reuse requirements.
 - **include_thumbnails** (boolean, optional): Whether to generate and return a composite image of thumbnails (default: `true`).
 
 ### How It Works

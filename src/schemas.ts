@@ -19,9 +19,9 @@ export const SearchImagesInputSchema = z.object({
     .default(0)
     .describe("Number of results to skip for pagination"),
   
-  license: z.enum(["no_restrictions", "all"])
+  license: z.enum(["cc0", "all"])
     .default("all")
-    .describe("Filter images by license type: 'no_restrictions' for CC0/public domain only, 'all' for any license"),
+    .describe("Filter images by license type: 'cc0' for CC0-licensed files only, 'all' for any license. Check each file page for its exact reuse requirements."),
   
   include_thumbnails: z.boolean()
     .default(true)

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "@jest/globals";
+import { describe, it, expect, jest } from "@jest/globals";
 import { writeFileSync, mkdirSync } from "fs";
 import { THUMBNAIL_SIZE } from "../constants.js";
 import { join } from "path";
@@ -41,12 +41,12 @@ describe("wikimedia-api", () => {
       expect(url).toContain("prop=imageinfo");
     });
 
-    it("should include CC0 filter when license is no_restrictions", () => {
+    it("should include the CC0 filter when license is cc0", () => {
       const params: SearchImagesInput = {
         query: "landscape",
         limit: 5,
         offset: 0,
-        license: "no_restrictions",
+        license: "cc0",
         include_thumbnails: false,
       };
 
@@ -147,9 +147,10 @@ describe("wikimedia-api", () => {
       const result = parseWikimediaResponse(apiResponse, params);
 
       expect(result.images.length).toBe(1);
-      expect(result.images[0]?.url).toBe(
+      expect(result.images[0]?.thumbnailUrl).toBe(
         `https://example.com/${THUMBNAIL_SIZE}px-Test.jpg`
       );
+      expect(result.images[0]?.originalUrl).toBe("https://example.com/Test.jpg");
       expect(result.images[0]?.width).toBe(800);
       expect(result.images[0]?.height).toBe(600);
       expect(result.images[0]?.caption).toBe("Test Image");
@@ -164,6 +165,7 @@ describe("wikimedia-api", () => {
         imageinfo: [
           {
             thumburl: `https://example.com/${THUMBNAIL_SIZE}px-Test${i}.jpg`,
+            url: `https://example.com/Test${i}.jpg`,
             width: 800,
             height: 600,
             descriptionurl: `https://example.com/File:Test${i}.jpg`,
@@ -252,7 +254,8 @@ describe("wikimedia-api", () => {
       const mockImages: ImageMetadata[] = [
         {
           index: 0,
-          url: `https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/${THUMBNAIL_SIZE}px-Cat03.jpg`,
+          thumbnailUrl: `https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cat03.jpg/${THUMBNAIL_SIZE}px-Cat03.jpg`,
+          originalUrl: "https://upload.wikimedia.org/wikipedia/commons/3/3a/Cat03.jpg",
           width: 800,
           height: 600,
           aspectRatio: "4:3",
@@ -260,10 +263,19 @@ describe("wikimedia-api", () => {
         },
       ];
 
-      const composite = await generateThumbnailComposite(mockImages);
+      const fetchSpy = jest.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="red"/></svg>'
+        )
+      );
 
-      expect(composite).toBeDefined();
-      expect(composite.length).toBeGreaterThan(0);
+      try {
+        const composite = await generateThumbnailComposite(mockImages);
+        expect(composite).toBeDefined();
+        expect(composite.length).toBeGreaterThan(0);
+      } finally {
+        fetchSpy.mockRestore();
+      }
     }, 20000);
   });
 });

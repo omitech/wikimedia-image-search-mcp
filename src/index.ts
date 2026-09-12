@@ -11,7 +11,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { SearchImagesInputSchema, type SearchImagesInput } from "./schemas.js";
-import { CHARACTER_LIMIT, THUMBNAIL_SIZE } from "./constants.js";
+import { CHARACTER_LIMIT } from "./constants.js";
 import type { SearchResult } from "./types.js";
 import yaml from "js-yaml";
 import {
@@ -39,7 +39,7 @@ export function formatSearchResults(result: SearchResult): string {
   }
 
   lines.push(
-    `\nEach result contains: index, url (url to fetch the image, replace ${THUMBNAIL_SIZE}px with desired width up to the original image width), size (bytes), width, height, descriptionurl (webpage link), and optional: caption, date, description, credit, artist, license (name, usageTerms, url).`
+    `\nEach result contains: index, originalUrl (original image file), thumbnailUrl (preview for visual comparison), size (bytes), width, height, descriptionurl (file page), and optional: caption, date, description, credit, artist, license (name, usageTerms, url).`
   );
   lines.push(
     `\nShowing ${result.images.length} result${
@@ -56,7 +56,7 @@ export function formatSearchResults(result: SearchResult): string {
     lines.push("\nEnd of results.");
   }
   lines.push(
-    `\nTo download images: use the image URL and replace '${THUMBNAIL_SIZE}px' with your desired width (up to original width).`
+    "\nTo download an image, use originalUrl. Use thumbnailUrl only for a preview."
   );
 
   lines.push(

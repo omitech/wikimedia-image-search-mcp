@@ -30,7 +30,7 @@ export function buildWikimediaApiUrl(params: SearchImagesInput): string {
   // Build the search query with filters
   let searchQuery = `${query} filemime:image/*`;
 
-  if (license === "no_restrictions") {
+  if (license === "cc0") {
     searchQuery += ` haswbstatement:P275=${CC0_WIKIDATA_ID}`;
   }
 
@@ -175,7 +175,7 @@ export function parseWikimediaResponse(
     const extmetadata = info.extmetadata;
 
     // Require essential fields
-    if (!info.thumburl || !info.width || !info.height) {
+    if (!info.thumburl || !info.url || !info.width || !info.height) {
       continue;
     }
 
@@ -209,7 +209,8 @@ export function parseWikimediaResponse(
     // Build the image metadata object
     const imageMetadata: ImageMetadata = {
       index: page.index ?? 0,
-      url: info.thumburl,
+      thumbnailUrl: info.thumburl,
+      originalUrl: info.url,
       width: info.width,
       height: info.height,
       aspectRatio: getAspectRatio(info.width, info.height),
@@ -284,29 +285,6 @@ export function parseWikimediaResponse(
 }
 
 /**
- * Calculate the appropriate thumbnail width based on original dimensions
- * to ensure max dimension is THUMBNAIL_SIZE (e.g. 256px)
- */
-function calculateThumbnailWidth(width: number, height: number): number {
-  if (height > width) {
-    const scaleFactor = THUMBNAIL_SIZE / height;
-    // resulting width
-    return Math.round(width * scaleFactor);
-  }
-
-  return THUMBNAIL_SIZE;
-}
-
-/**
- * Extract the width parameter from a Wikimedia thumbnail URL
- * and replace it with a new width value
- */
-function replaceUrlWidth(url: string, newWidth: number): string {
-  // Wikimedia URLs have format like e.g.: .../256px-filename.jpg
-  return url.replace(/\/(\d+)px-/, `/${newWidth}px-`);
-}
-
-/**
  * Generate thumbnail composite image from multiple images
  * Creates a 3-column grid with up to MAX_IMAGES_IN_COMPOSITE images
  * with index numbers overlaid on each thumbnail
@@ -334,14 +312,9 @@ export async function generateThumbnailComposite(
     await Promise.all(
       limitedImages.map(async (img, index) => {
         try {
-          // Calculate appropriate width for this image
-          const thumbnailWidth = calculateThumbnailWidth(img.width, img.height);
-
-          // Adjust URL if needed
-          const fetchUrl = replaceUrlWidth(img.url, thumbnailWidth);
-
-          // Fetch the image
-          const response = await fetch(fetchUrl, {
+          // Commons already returns a displayable thumbnail URL. Rewriting its size can
+          // invalidate URLs served by the thumbnail proxy.
+          const response = await fetch(img.thumbnailUrl, {
             headers: {
               "User-Agent":
                 "wikimedia-image-search-mcp/1.0.0 (https://github.com/yanexr/wikimedia-image-search-mcp)",

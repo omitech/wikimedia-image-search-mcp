@@ -36,7 +36,10 @@ export interface WikimediaApiResponse {
 
 export interface ImageMetadata {
   index: number;
-  url: string;
+  /** Reduced image returned by Commons for previews and visual comparison. */
+  thumbnailUrl: string;
+  /** Original file URL supplied by Commons. */
+  originalUrl: string;
   size?: number;
   width: number;
   height: number;
@@ -60,4 +63,4 @@ export interface SearchResult {
   nextOffset?: number;
 }
 
-export type LicenseType = "no_restrictions" | "all";
+export type LicenseType = "cc0" | "all";
