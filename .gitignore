@@ -3,7 +3,8 @@ node_modules/
 .pnpm-store/
 
 # Build output
-dist/
+# `dist/` is committed so consumers can run this repository at a pinned Git revision
+# without relying on a package-manager lifecycle build.
 build/
 *.tsbuildinfo
 
